@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicken Shooter Game</title>
+    <link rel="stylesheet" href="/img/IMG_3081.PNG">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        
+        canvas {
+            position: fixed;           
+            background: url("https://www.kapwing.com/resources/content/images/2020/12/desktop-background.gif");
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="main">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const playerImage = new Image();
+        playerImage.src = '/img/IMG_3079.jpg'; // Thay đổi đường dẫn đến hình ảnh người chơi
+
+        const chickenImage = new Image();
+        chickenImage.src = '/img/IMG_3081.jpg'; // Thay đổi đường dẫn đến hình ảnh gà
+
+        const heartImage = new Image();
+        heartImage.src = 'https://lh3.googleusercontent.com/pw/ABLVV84Fy_g0MdPXyararqVllVP8ppXU8O1rEjZmzcOUkoctleyjoHitMegTJJGHDhg142ukRB9im7uB1tmZzLB-V2zCHxzcrGf-BMMH0D3LPv_T7BvTlCpfjslWusD3dvQHHI_BoJwLnFMSXC1eea2melHXdVMqapmsX3PR00W1BG99mvFE7YBp58EGCQJY9IX2uPMkOXCZhWMNiV4flTLPpXO76GlDfHY-85fbLB5ULQoac4A99kKl4zjaKLnjeI6k1p_eg8yYwvgbJTTUXljFFbq-paM3yRrmg_MFN59W9FYT_hRJijwGUnkAwaMNJk5hPnjqe7tevRDoXQQuUDS1bopuBPk450hDZFIWrDhJn4as72NCKtLxYd_nX86k-LevobFZU1L4cJdguuAxurZZWitSTrIWgTpRnxPcsAVMrCGKVFdfVTH_hg5XXC3KMK8ht61n2fR_o6PHY1ZcrnHkbaP2V3YDFpkTNVZp-zzQz3UYVhSpiR0vv2P0_G3cLEgAyXbGQNtu0RW_8BJq78gKQkugOsw5QYQYeP3hOApBeKsO6Kschm9PcNytediq-dNWPaaZ3excqmtW5JAtZ9D7qYSPVO1T-juITedpXXz5PPGemOnEIopVNVC7EtHosIgUx7lo95FHGNImtmX-H4us4HS7cUsHd3yFfVvk8yhkOUgZkeeK4BYrZKep2u6_L-k4Y64lWkbMlpzjXYz3w8MUAfQABSTAupAq8jUQnZRrar0a3LNoc4LtcKX2TfHleYcEW_bjMWk0t2dEn7LIzYuhq0vstV_OliGaKVf9g1s0ClOwb5q5w9XgMLhrupja9DNoAJzHhtMOas1rqN4afO7RywIre-JZFrUVy_VmhkAKzMTDPyb-c-_XYGglJNyqegcH2L9vRUGqPnfaPK2mz_Pc8yRHaePwPn6ZcghcPclwACp7asWglFbsrMU0QFKnhkUkkTbOwDuTtC2vS6C3ns1daYzcnDn2i74Xjnyqxedu8kxXT_fVnqo2EQBFEJFUvBcuw6VfAdHeXnM4om2JF-Y0DtQKl891G6fIqHE6ZedbbVI40MaTBMJUOw=w225-h225-s-no?authuser=5'; // Thay đổi đường dẫn đến hình ảnh trái tim
+
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height - 200,
+            width: 200,
+            height: 200,
+            speed: 5
+        };
+
+        let bullets = [];
+        let chickens = [];
+        let score = 0;
+
+        function drawPlayer() {
+            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+        }
+
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                ctx.drawImage(heartImage, bullet.x, bullet.y, bullet.width, bullet.height);
+            });
+        }
+
+        function drawChickens() {
+            chickens.forEach(chicken => {
+                ctx.drawImage(chickenImage, chicken.x, chicken.y, chicken.width, chicken.height);
+            });
+        }
+
+        function movePlayer(event) {
+            if (event.clientX > 0 && event.clientX < canvas.width) {
+                player.x = event.clientX - player.width / 2;
+            }
+        }
+
+        function shoot() {
+            bullets.push({
+                x: player.x + player.width / 2 - 5,
+                y: player.y,
+                width: 40,
+                height: 40,
+                speed: 10
+            });
+        }
+
+        function createChicken() {
+            chickens.push({
+                x: Math.random() * (canvas.width - 50),
+                y: 0,
+                width: 100,
+                height: 100,
+                speed: Math.random() * 2 + 2
+            });
+        }
+
+        function updateBullets() {
+            bullets = bullets.filter(bullet => bullet.y > 0);
+            bullets.forEach(bullet => bullet.y -= bullet.speed);
+        }
+
+        function updateChickens() {
+            chickens = chickens.filter(chicken => chicken.y < canvas.height);
+            chickens.forEach(chicken => chicken.y += chicken.speed);
+        }
+
+        function update() {
+            updateBullets();
+            updateChickens();
+
+            // Check for collisions
+            bullets.forEach(bullet => {
+                chickens.forEach(chicken => {
+                    if (
+                        bullet.x < chicken.x + chicken.width &&
+                        bullet.x + bullet.width > chicken.x &&
+                        bullet.y < chicken.y + chicken.height &&
+                        bullet.y + bullet.height > chicken.y
+                    ) {
+                        score++;
+                        chickens.splice(chickens.indexOf(chicken), 1);
+                    }
+                });
+            });
+
+            // Create new chicken at random intervals
+            if (Math.random() < 0.01) {
+                createChicken();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawBullets();
+            drawChickens();
+
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 10, 30);
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function autoShoot() {
+            shoot();
+        }
+
+        document.addEventListener("mousemove", movePlayer);
+        document.addEventListener("click", shoot);
+
+        gameLoop();
+        setInterval(autoShoot, 120); // Shoot every 500 milliseconds (0.5 seconds)
+    </script>
+</body>
+</html>
